@@ -11,7 +11,10 @@ function sameOriginRequest(request: Request) {
   try {
     const url=new URL(request.url);
     const origin=request.headers.get('origin');
-    return !!origin && origin===url.origin;
+    if(!origin)return false;
+    const host=(request.headers.get('x-forwarded-host')||request.headers.get('host')||url.host).split(',')[0].trim();
+    const protocol=(request.headers.get('x-forwarded-proto')||url.protocol).split(',')[0].trim().replace(/:$/,'');
+    return new URL(origin).origin===`${protocol}://${host}`;
   } catch { return false; }
 }
 export async function GET() { return json({provider:'Google Gemini',configured:!!process.env.GEMINI_API_KEY?.trim()}); }
